@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const c = document.getElementById("mycanvas");
-    c.width = window.innerWidth
-    c.height = window.innerHeight
+    c.width = 400
+    c.height = 400
     const width = c.width
     const height = c.height
     const ctx = c.getContext("2d");
@@ -30,21 +30,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let coordinate_list = []
     for(let x = -width/2; x <= width/2; x+=1){
-        let y = Math.sqrt(x);
-        let draw = coordinateConverter(x, y);
-        coordinate_list.push(draw)
+        for(let y = -height/2 ; y <= height/2; y++){
+            let diff = Math.sqrt(x*x + y*y);
+            coordinate_list.push(coordinateConverter(x, y))
+        }
+        
     }
 
-    for(let i = 0; i < coordinate_list.length-1; i++){
+    /* for(let i = 0; i < coordinate_list.length; i++){
         const point1 = coordinate_list[i]
-        const point2 = coordinate_list[i+1]
-        ctx.beginPath()
-        ctx.moveTo(point1.x, point1.y)
-        ctx.lineTo(point2.x, point2.y)
-        ctx.strokeStyle = 'red'
-        ctx.stroke()
-        ctx.closePath()
-    }
-})
+        ctx.fillRect(point1.x, point1.y, 1, 1)
+    } */
+    
 
-//y = x+1
+})  
+
+//y = (x+1) * 3

@@ -1,4 +1,18 @@
 #master{
     display: flex;
     justify-content: center;
+    flex-direction: column;
+}
+#other{
+    display: flex;
+    justify-content: center;
+    margin: 2%;
+}
+#Fractals{
+    display: flex;
+    justify-content: center;
+}
+body{
+    padding: 3%;
+
 }
