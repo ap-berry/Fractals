@@ -10,8 +10,16 @@
 <body>
     <div id="master">
     <div id="other">
-        <label id="clock">Time</label>  
-        <button id="start">Start Lagging</button>
+        <label id="clock">Time</label>
+        <label for="a" id="a_label">c.a = -0.48</label>  
+        <input type="range" min="-200" max="200" value = "-48" id = "a">
+        <label for="b" id="b_label">c.b = -0.56</label>  
+        <input type="range" min="-200" max="200" value = "-56" id = "b">
+        <label for="lim" id="lim_label">limit = 2</label>  
+        <input type="range" min="0" max="10" value = "2" id = "lim">
+        <label for="maxIter" id="maxIter_label">maximum Iteration = 50</label>  
+        <input type="range" min="0" max="200" value = "50" id = "maxIter">
+        <button id="start">Start lagging</button>
     </div>
     <div id="Fractals">
         <canvas id="mycanvas" style="border:1px solid #000000;"></canvas>
