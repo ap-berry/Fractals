@@ -20,6 +20,11 @@
         <label for="maxIter" id="maxIter_label">maximum Iteration = 50</label>  
         <input type="range" min="0" max="200" value = "50" id = "maxIter">
         <button id="start">Start lagging</button>
+        <select name="change fractal" id="modechanger">
+            <option value="julia">Julia sets</option>
+            <option value="mandelbrot">Mandelbrot set</option>
+            <option value="serpernski">Serpenski triangle?</option>
+        </select>
     </div>
     <div id="Fractals">
         <canvas id="mycanvas" style="border:1px solid #000000;"></canvas>

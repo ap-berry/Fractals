@@ -1,3 +1,4 @@
+let currentFractal;
 document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("mycanvas");
     const ctx = canvas.getContext("2d");
@@ -27,7 +28,24 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("maxIter_label").innerText = `maximum Iteration = ${slider_maxIter.value}`;
     }
     document.getElementById("start").addEventListener("click", start)
-    
+    const mode = document.getElementById("modechanger")
+    currentFractal = mode.value
+    mode.addEventListener("change", ()=>{
+        currentFractal = mode.value
+        if(mode.value === "mandelbrot"){
+            slider_a.hidden = true;
+            slider_b.hidden = true;
+            document.getElementById("a_label").hidden = true;
+            document.getElementById("b_label").hidden = true;
+        }
+        else if(mode.value === "julia"){
+
+            slider_a.hidden = false;
+            slider_b.hidden = false;
+            document.getElementById("a_label").hidden = false;
+            document.getElementById("b_label").hidden = false;
+        }
+    })
     
     async function start(){
         const c = { a: slider_a.value/100, b : slider_b.value/100 };
@@ -57,9 +75,25 @@ function mod(z){
     return z.x*z.x + z.y*z.y
 }
 function count_itteration(x, y, c, maxIteration, lim){
-    let z = { 
-        "x" : x, 
-        "y" : y
+    let z;
+    if(currentFractal === "julia"){
+        z = {
+            "x" : x,
+            "y" : y
+        }
+    }
+    else if(currentFractal === "mandelbrot"){
+        z = {
+            "x" : 0,
+            "y" : 0
+        }
+        c = {
+            a : x,
+            b : y
+        }
+    }
+    else{
+        throw console.error("Not a valid fractal")
     }
 
     let i = 0
@@ -67,7 +101,7 @@ function count_itteration(x, y, c, maxIteration, lim){
     while(i < maxIteration){
         let z2 = compute_next(z, c);
         if(mod(z2) > lim) break;
-        z.x = z2.x 
+        z.x = z2.x
         z.y = z2.y
         i++;
     }
