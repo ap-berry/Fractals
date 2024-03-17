@@ -1,48 +1,58 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const c = document.getElementById("mycanvas");
-    c.width = 400
-    c.height = 400
-    const width = c.width
-    const height = c.height
-    const ctx = c.getContext("2d");
-    function drawXaxis(){
-        ctx.beginPath()
-        ctx.moveTo(0, height/2)
-        ctx.lineTo(width, height/2)
-        ctx.stroke()
-        ctx.closePath()
-    }
-    function drawYaxis(){
-        ctx.beginPath()
-        ctx.moveTo(width/2, 0)
-        ctx.lineTo(width/2, height)
-        ctx.stroke()
-        ctx.closePath()
-    }
-    drawXaxis()
-    drawYaxis()
+    const canvas = document.getElementById("mycanvas").getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const width = canvas.width
+    const height = canvas.height
+    canvas.translate(width/2, height/2);
 
-    function coordinateConverter(x, y){
-        let x_canvas = width/2 + x;
-        let y_canvas = height/2 - y;
-        return { "x" : x_canvas, "y" : y_canvas};
-    }
+    setInterval(() => {
+        document.getElementById("clock").innerText = new Date().toTimeString()
+    }, 1E3);
+    const m = 255/50;
 
-    let coordinate_list = []
-    for(let x = -width/2; x <= width/2; x+=1){
-        for(let y = -height/2 ; y <= height/2; y++){
-            let diff = Math.sqrt(x*x + y*y);
-            coordinate_list.push(coordinateConverter(x, y))
+    const c = { a: 0.1, b : 0.3 };
+
+    document.getElementById("start").addEventListener("click", () => {
+        for(let x = -width/2; x <= width/2; x++){
+            for(let y = height/2; y <= height/2; y++){
+                let rgb = Math.floor(m*count_itteration(x, y, c, 50))
+                canvas.fillStyle = `red`;
+                canvas.fillRect(x, y, 1, 1);
+            }
         }
-        
-    }
-
-    /* for(let i = 0; i < coordinate_list.length; i++){
-        const point1 = coordinate_list[i]
-        ctx.fillRect(point1.x, point1.y, 1, 1)
-    } */
-    
-
+    })
 })  
 
+function compute_next(z, c){
+    let z2 = {
+        "x" : (z.x*z.x - z.y*z.y + c.a),
+        "y" : (2*z.x*z.x + c.b) 
+    }
+    return z2;
+}
+
+function count_itteration(x, y, c, maxIteration){
+    let z = { 
+        "x" : x, 
+        "y" : y
+    }
+
+    let i = 0
+    while(i < maxIteration){
+        let z2 = compute_next(z, c);
+        if(z2.x > 2) break;
+        i++;
+    }
+    return i;
+}
+//copied from SO
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  }
+  
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  }
 //y = (x+1) * 3
