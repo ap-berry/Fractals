@@ -18,8 +18,13 @@
         <label for="lim" id="lim_label">limit = 2</label>  
         <input type="range" min="0" max="10" value = "2" id = "lim">
         <label for="maxIter" id="maxIter_label">maximum Iteration = 50</label>  
-        <input type="range" min="0" max="200" value = "50" id = "maxIter">
-        <button id="start">Start lagging</button>
+        <input type="range" min="0" max="500" value = "100" id = "maxIter">
+        <div id="btns">
+            <button id="start">Start lagging</button>
+            <label for="autodwn">Auto Download Image?</label>
+            <input type="checkbox" id="autodwn">
+            <button id="zoom">Zoom</button>
+        </div>
         <select name="change fractal" id="modechanger">
             <option value="julia">Julia sets</option>
             <option value="mandelbrot">Mandelbrot set</option>

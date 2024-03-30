@@ -1,8 +1,8 @@
 let currentFractal;
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const canvas = document.getElementById("mycanvas");
     const ctx = canvas.getContext("2d");
-    canvas.width = 1000//window.innerWidth;
+    canvas.width =  1000 //window.innerWidth;
     canvas.height = 1000 //window.innerHeight;
     const width = canvas.width
     const height = canvas.height
@@ -27,7 +27,15 @@ document.addEventListener("DOMContentLoaded", () => {
     slider_maxIter.oninput = () => {
         document.getElementById("maxIter_label").innerText = `maximum Iteration = ${slider_maxIter.value}`;
     }
-    document.getElementById("start").addEventListener("click", start)
+    document.getElementById("start").addEventListener("click", () => {
+        start({
+            x : -width/2,
+            y : height/2
+        }, {
+            x: width/2,
+            y : -height/2
+        })
+    })
     const mode = document.getElementById("modechanger")
     currentFractal = mode.value
     mode.addEventListener("change", ()=>{
@@ -46,19 +54,47 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("b_label").hidden = false;
         }
     })
+
+    document.getElementById("zoom").addEventListener("click", ()=>{
+        start({
+            x : -30,
+            y : 30
+        }, {
+            x: 0,
+            y : 0
+        })
+    })
     
-    async function start(){
+    // sx = width / |(x2-x1)|, sy = height / |(y2-y1)|, (x1, y1) = (300, 300), (x2, y2) = (400, 400), a = d_width/width, b = d_height / height
+
+    async function start(start_pos, end_pos){
         const c = { a: slider_a.value/100, b : slider_b.value/100 };
         const lim = slider_lim.value
         const maxiter = slider_maxIter.value
         const m = 255/maxiter;
-        for(let x = -width/2; x <= width/2; x++){
-            for(let y = -height/2; y <= height/2; y++){
-                let rgb = Math.floor(m*count_itteration((x*2*lim/width), (y*2*lim/width), c, maxiter, lim))
-                ctx.fillStyle = `${rgbToHex(rgb, rgb, rgb)}`;
-                ctx.fillRect(x, y, 1, 1);
-                
+
+        let d_width = Math.abs(start_pos.x - end_pos.x)
+        let d_height = Math.abs(start_pos.y - end_pos.y)
+        let a = d_width / width
+        let b = d_height / height
+        let x = start_pos.x   // start_pos.x < end_pos.x | start_pos.y > end_pos.y
+        let y = end_pos.y
+        for(let i = -width/2; i <= width/2; i++){
+            for(let j = -height/2; j <= height/2; j++){
+                let rgb = Math.floor(m*count_itteration((x*2*lim/width), (j*2*lim/height), c, maxiter, lim))
+                ctx.fillStyle = `${rgbToHex(rgb, rgb, rgb)}`
+                ctx.fillRect(i, j, 1, 1)
+                y = y + b
             }
+            x = x + a
+        }
+        if (document.getElementById("autodwn").checked){
+            let canvasUrl = canvas.toDataURL();
+            const createEl = document.createElement('a');
+            createEl.href = canvasUrl;
+            createEl.download = "download-this-canvas";
+            createEl.click();
+            createEl.remove();
         }
     }
 })  
@@ -91,16 +127,17 @@ function count_itteration(x, y, c, maxIteration, lim){
             a : x,
             b : y
         }
+        lim = 2 
     }
     else{
         throw console.error("Not a valid fractal")
     }
 
     let i = 0
-    lim = Math.pow(lim, 2)
+    let lim_sq = Math.pow(lim, 2)
     while(i < maxIteration){
         let z2 = compute_next(z, c);
-        if(mod(z2) > lim) break;
+        if(mod(z2) > lim_sq) break;
         z.x = z2.x
         z.y = z2.y
         i++;
