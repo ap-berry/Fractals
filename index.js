@@ -35,6 +35,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             x: width/2,
             y : -height/2
         })
+        startingState = ctx.getImageData(0, 0, width, height)
+
     })
     const mode = document.getElementById("modechanger")
     currentFractal = mode.value
@@ -63,9 +65,38 @@ document.addEventListener("DOMContentLoaded", async () => {
             x: 0,
             y : 0
         })
+        
     })
     
     // sx = width / |(x2-x1)|, sy = height / |(y2-y1)|, (x1, y1) = (300, 300), (x2, y2) = (400, 400), a = d_width/width, b = d_height / height
+    let drawing = false
+    let startingPoint, endingPoint
+    let startingState = ctx.getImageData(0, 0, width, height)
+    function drawstart(e){
+        drawing = true
+        startingPoint = getMousePos(canvas, e)
+    }
+    function draw(e){
+        if(!drawing) return
+        ctx.putImageData(startingState ,0, 0)
+        endingPoint = getMousePos(canvas, e)
+        let w = endingPoint.x - startingPoint.x
+        w = Math.floor(w)
+        let h = endingPoint.y - startingPoint.y
+        h = Math.floor(h)
+        let x = Math.floor(startingPoint.x) - width/2
+        let y = Math.floor(startingPoint.y) - width/2
+
+        ctx.strokeStyle = "red"
+        ctx.strokeRect(x, y, w, h)
+    }
+    function drawstop(){
+        drawing = false
+    }
+    window.addEventListener("mousedown", drawstart)
+    window.addEventListener("mousemove", draw)
+    window.addEventListener("mouseup", drawstop)
+
 
     async function start(start_pos, end_pos){
         const c = { a: slider_a.value/100, b : slider_b.value/100 };
@@ -96,6 +127,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             createEl.click();
             createEl.remove();
         }
+
     }
 })  
 
@@ -153,4 +185,12 @@ function componentToHex(c) {
 function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
   }
-//y = (x+1) * 3
+    canvas.addEventListener("mousemove", draw)
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+      }
+ //y = (x+1) * 3
