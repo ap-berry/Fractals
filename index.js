@@ -1,4 +1,5 @@
 let currentFractal;
+let graphStartingPoint = {x: -2, y: 2}, graphEndingPoint = {x: 2, y:-2};
 document.addEventListener("DOMContentLoaded", async () => {
     const canvas = document.getElementById("mycanvas");
     const ctx = canvas.getContext("2d");
@@ -6,7 +7,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     canvas.height = 1000 //window.innerHeight;
     const width = canvas.width
     const height = canvas.height
-    ctx.translate(width/2, height/2);
 
     setInterval(async () => {
         document.getElementById("clock").innerText = new Date().toTimeString()
@@ -25,18 +25,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     const slider_maxIter = document.getElementById("maxIter")
     slider_maxIter.oninput = () => {
-        document.getElementById("maxIter_label").innerText = `maximum Iteration = ${slider_maxIter.value}`;
+        document.getElementById("maxIter_label").innerText = `(Improves Calrity) maximum Iteration = ${slider_maxIter.value}`;
     }
     document.getElementById("start").addEventListener("click", () => {
         start({
-            x : -width/2,
-            y : height/2
+            x : -2,
+            y : 2
         }, {
-            x: width/2,
-            y : -height/2
+            x: 2,
+            y : -2
         })
-        startingState = ctx.getImageData(0, 0, width, height)
-
     })
     const mode = document.getElementById("modechanger")
     currentFractal = mode.value
@@ -65,40 +63,82 @@ document.addEventListener("DOMContentLoaded", async () => {
             x: 0,
             y : 0
         })
-        
+
     })
     
     // sx = width / |(x2-x1)|, sy = height / |(y2-y1)|, (x1, y1) = (300, 300), (x2, y2) = (400, 400), a = d_width/width, b = d_height / height
     let drawing = false
-    let startingPoint, endingPoint
+    let canvasStartingPoint, canvasEndingPoint
     let startingState = ctx.getImageData(0, 0, width, height)
     function drawstart(e){
         drawing = true
-        startingPoint = getMousePos(canvas, e)
+        canvasStartingPoint = getMousePosFloored(canvas, e)
     }
     function draw(e){
         if(!drawing) return
         ctx.putImageData(startingState ,0, 0)
-        endingPoint = getMousePos(canvas, e)
-        let w = endingPoint.x - startingPoint.x
-        w = Math.floor(w)
-        let h = endingPoint.y - startingPoint.y
-        h = Math.floor(h)
-        let x = Math.floor(startingPoint.x) - width/2
-        let y = Math.floor(startingPoint.y) - width/2
+        canvasEndingPoint = getMousePosFloored(canvas, e)
 
-        ctx.strokeStyle = "red"
-        ctx.strokeRect(x, y, w, h)
+        let w = canvasEndingPoint.x - canvasStartingPoint.x
+        let h = canvasEndingPoint.y - canvasStartingPoint.y
+        let x = canvasStartingPoint.x 
+        let y = canvasStartingPoint.y
+        let a = Math.max(Math.abs(w), Math.abs(h))
+        ctx.strokeStyle = "red" 
+        if(h < 0 && w > 0) { 
+          ctx.strokeRect(x, y, a, -a)
+          canvasEndingPoint.x = canvasStartingPoint.x + a
+          canvasEndingPoint.y = canvasStartingPoint.y - a
+        }
+        else if(h > 0 && w < 0) {
+          ctx.strokeRect(x, y, -a, a)
+          canvasEndingPoint.x = canvasStartingPoint.x - a
+          canvasEndingPoint.y  = canvasStartingPoint.y + a
+        }
+        else if(h < 0 && w < 0) {
+          ctx.strokeRect(x, y, -a, -a) 
+          canvasEndingPoint.x = canvasStartingPoint.x - a
+          canvasEndingPoint.y = canvasStartingPoint.y - a
+        }
+        else {
+          ctx.strokeRect(x, y, a, a)
+          canvasEndingPoint.x = canvasStartingPoint.x + a 
+          canvasEndingPoint.y = canvasStartingPoint.y + a
+        }
+        
     }
     function drawstop(){
         drawing = false
+        let point1 = canvasPosToGraphPos(canvasStartingPoint)
+        let point2 = canvasPosToGraphPos(canvasEndingPoint)
+        console.log("Canvas Positions", canvasStartingPoint, canvasEndingPoint)
+        console.log("Graph Positions", point1, point2)
+        start(point1, point2)
     }
-    window.addEventListener("mousedown", drawstart)
-    window.addEventListener("mousemove", draw)
-    window.addEventListener("mouseup", drawstop)
+
+    function canvasPosToGraphPos(canvasPosition){
+        return {
+            x: graphStartingPoint.x + canvasPosition.x * ( Math.abs(graphEndingPoint.x - graphStartingPoint.x) / width ),
+            y: graphStartingPoint.y - canvasPosition.y * ( Math.abs(graphStartingPoint.y - graphEndingPoint.y) / height ) 
+        }
+    }
+    function zoom(e){
+        //nothing
+    }
+    canvas.addEventListener("mousedown", drawstart)
+    canvas.addEventListener("mousemove", draw)
+    canvas.addEventListener("mouseup", drawstop)
+    canvas.addEventListener("dblclick", zoom)
 
 
     async function start(start_pos, end_pos){
+       //deal with different graph points
+        const properPoints = getProperStartingPointAndEndingPoint(start_pos, end_pos);
+        start_pos = properPoints[0];
+        end_pos = properPoints[1];
+        graphStartingPoint = start_pos
+        graphEndingPoint = end_pos 
+
         const c = { a: slider_a.value/100, b : slider_b.value/100 };
         const lim = slider_lim.value
         const maxiter = slider_maxIter.value
@@ -106,18 +146,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let d_width = Math.abs(start_pos.x - end_pos.x)
         let d_height = Math.abs(start_pos.y - end_pos.y)
-        let a = d_width / width
-        let b = d_height / height
-        let x = start_pos.x   // start_pos.x < end_pos.x | start_pos.y > end_pos.y
-        let y = end_pos.y
-        for(let i = -width/2; i <= width/2; i++){
-            for(let j = -height/2; j <= height/2; j++){
-                let rgb = Math.floor(m*count_itteration((x*2*lim/width), (j*2*lim/height), c, maxiter, lim))
-                ctx.fillStyle = `${rgbToHex(rgb, rgb, rgb)}`
+        let dx = d_width / width
+        let dy = d_height / height
+        let x = start_pos.x  // start_pos.x < end_pos.x | start_pos.y > end_pos.y
+        let y = start_pos.y
+        for(let i = 0; i <= width; i++){
+            for(let j = 0; j <= height; j++){
+                let rgb = Math.floor(m*count_itteration(x, y, c, maxiter, lim))
+                ctx.fillStyle =  `${rgbToHex(rgb, rgb, rgb)}` // x > 0 ? "red" : "black"
                 ctx.fillRect(i, j, 1, 1)
-                y = y + b
+                y -= dy
             }
-            x = x + a
+            y = start_pos.y
+            x += dx
         }
         if (document.getElementById("autodwn").checked){
             let canvasUrl = canvas.toDataURL();
@@ -127,7 +168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             createEl.click();
             createEl.remove();
         }
-
+        startingState = ctx.getImageData(0, 0, width, height)
     }
 })  
 
@@ -176,6 +217,12 @@ function count_itteration(x, y, c, maxIteration, lim){
     }
     return i;
 }
+function getProperStartingPointAndEndingPoint(p1, p2){
+  if(p1.x < p2.x && p1.y > p2.y) return [p1, p2]; 
+  else if (p1.x < p2.x && p1.y < p2.y) return [{x: p2.x, y: p1.y}, {x: p1.x, y: p2.y}];
+  else if (p1.x > p2.x && p1.y < p2.y) return [p2, p1];
+  else return [{x: p1.x, y: p2.y}, {x: p2.x, y: p1.y}];
+}
 //copied from SO
 function componentToHex(c) {
     var hex = c.toString(16);
@@ -185,12 +232,10 @@ function componentToHex(c) {
 function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
   }
-    canvas.addEventListener("mousemove", draw)
-    function getMousePos(canvas, evt) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-          x: evt.clientX - rect.left,
-          y: evt.clientY - rect.top
-        };
-      }
- //y = (x+1) * 3
+function getMousePosFloored(canvas, evt) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+      x: Math.floor(evt.clientX - rect.left),
+      y: Math.floor(evt.clientY - rect.top)
+  };
+}
