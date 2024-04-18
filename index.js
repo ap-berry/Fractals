@@ -55,15 +55,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     })
 
-    document.getElementById("zoom").addEventListener("click", ()=>{
-        start({
-            x : -30,
-            y : 30
-        }, {
-            x: 0,
-            y : 0
-        })
-
+    document.getElementById("save").addEventListener("click", ()=>{
+      let canvasUrl = canvas.toDataURL();
+      const createEl = document.createElement('a');
+      createEl.href = canvasUrl;
+      createEl.download = "fractal";
+      createEl.click();
+      createEl.remove(); 
     })
     
     // sx = width / |(x2-x1)|, sy = height / |(y2-y1)|, (x1, y1) = (300, 300), (x2, y2) = (400, 400), a = d_width/width, b = d_height / height
@@ -122,13 +120,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             y: graphStartingPoint.y - canvasPosition.y * ( Math.abs(graphStartingPoint.y - graphEndingPoint.y) / height ) 
         }
     }
-    function zoom(e){
-        //nothing
-    }
     canvas.addEventListener("mousedown", drawstart)
     canvas.addEventListener("mousemove", draw)
     canvas.addEventListener("mouseup", drawstop)
-    canvas.addEventListener("dblclick", zoom)
 
 
     async function start(start_pos, end_pos){
@@ -164,7 +158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             let canvasUrl = canvas.toDataURL();
             const createEl = document.createElement('a');
             createEl.href = canvasUrl;
-            createEl.download = "download-this-canvas";
+            createEl.download = "fractal";
             createEl.click();
             createEl.remove();
         }
@@ -179,7 +173,6 @@ function compute_next(z, c){
     }
     return z2;
 }
-
 function mod(z){
     return z.x*z.x + z.y*z.y
 }
