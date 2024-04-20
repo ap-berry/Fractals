@@ -1,16 +1,14 @@
 let currentFractal;
 let graphStartingPoint = {x: -2, y: 2}, graphEndingPoint = {x: 2, y:-2};
+let states = [] 
 document.addEventListener("DOMContentLoaded", async () => {
     const canvas = document.getElementById("mycanvas");
     const ctx = canvas.getContext("2d");
-    canvas.width =  1000 //window.innerWidth;
-    canvas.height = 1000 //window.innerHeight;
+    canvas.width =  700//window.innerWidth;
+    canvas.height = 700 //window.innerHeight;
     const width = canvas.width
     const height = canvas.height
-
-    setInterval(async () => {
-        document.getElementById("clock").innerText = new Date().toTimeString()
-    }, 1E3);
+ 
     const slider_a = document.getElementById("a")
     slider_a.oninput = () => {
         document.getElementById("a_label").innerText = `c.a = ${slider_a.value/100}`;
@@ -19,14 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     slider_b.oninput = () => {
         document.getElementById("b_label").innerText = `c.b = ${slider_b.value/100}`;
     }
-    const slider_lim = document.getElementById("lim")
-    slider_lim.oninput = () => {
-        document.getElementById("lim_label").innerText = `limit = ${slider_lim.value}`;
-    }
-    const slider_maxIter = document.getElementById("maxIter")
-    slider_maxIter.oninput = () => {
-        document.getElementById("maxIter_label").innerText = `(Improves Calrity) maximum Iteration = ${slider_maxIter.value}`;
-    }
+    const input_maxIter = document.getElementById("maxIter") 
     document.getElementById("start").addEventListener("click", () => {
         start({
             x : -2,
@@ -35,6 +26,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             x: 2,
             y : -2
         })
+    })
+    const zoomoutbtn = document.getElementById("zoomout")
+    zoomoutbtn.addEventListener("click", ()=>{
+      let lastState = states.pop()
+      start(lastState.graphStartingPoint, lastState.graphEndingPoint)
     })
     const mode = document.getElementById("modechanger")
     currentFractal = mode.value
@@ -53,6 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("a_label").hidden = false;
             document.getElementById("b_label").hidden = false;
         }
+        document.getElementById("elapsedTime").innerHTML = ''
     })
 
     document.getElementById("save").addEventListener("click", ()=>{
@@ -111,9 +108,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         let point2 = canvasPosToGraphPos(canvasEndingPoint)
         console.log("Canvas Positions", canvasStartingPoint, canvasEndingPoint)
         console.log("Graph Positions", point1, point2)
+        states.push({graphStartingPoint, graphEndingPoint})
+        if (zoomoutbtn.disabled) zoomoutbtn.disabled = false
         start(point1, point2)
     }
-
+    
     function canvasPosToGraphPos(canvasPosition){
         return {
             x: graphStartingPoint.x + canvasPosition.x * ( Math.abs(graphEndingPoint.x - graphStartingPoint.x) / width ),
@@ -126,6 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     async function start(start_pos, end_pos){
+        let startTime = new Date()
        //deal with different graph points
         const properPoints = getProperStartingPointAndEndingPoint(start_pos, end_pos);
         start_pos = properPoints[0];
@@ -133,10 +133,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         graphStartingPoint = start_pos
         graphEndingPoint = end_pos 
 
-        const c = { a: slider_a.value/100, b : slider_b.value/100 };
-        const lim = slider_lim.value
-        const maxiter = slider_maxIter.value
-        const m = 255/maxiter;
+        const c = { a: slider_a.value/100, b : slider_b.value/100 }
+        const lim = 2
+        const maxiter = input_maxIter.value
+        const m = 255/maxiter
 
         let d_width = Math.abs(start_pos.x - end_pos.x)
         let d_height = Math.abs(start_pos.y - end_pos.y)
@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         for(let i = 0; i <= width; i++){
             for(let j = 0; j <= height; j++){
                 let rgb = Math.floor(m*count_itteration(x, y, c, maxiter, lim))
-                ctx.fillStyle =  `${rgbToHex(rgb, rgb, rgb)}` // x > 0 ? "red" : "black"
+                ctx.fillStyle = `${rgbToHex(Math.floor(rgb*j/width), Math.floor(rgb*i/height), rgb)}`;
                 ctx.fillRect(i, j, 1, 1)
                 y -= dy
             }
@@ -155,21 +155,25 @@ document.addEventListener("DOMContentLoaded", async () => {
             x += dx
         }
         if (document.getElementById("autodwn").checked){
-            let canvasUrl = canvas.toDataURL();
-            const createEl = document.createElement('a');
-            createEl.href = canvasUrl;
-            createEl.download = "fractal";
-            createEl.click();
-            createEl.remove();
+            let canvasUrl = canvas.toDataURL()
+            const createEl = document.createElement('a')
+            createEl.href = canvasUrl
+            createEl.download = "fractal"
+            createEl.click()
+            createEl.remove()
         }
         startingState = ctx.getImageData(0, 0, width, height)
+        // zoom level
+    document.getElementById("zoom").innerHTML = `Current Zoom : ${(4 / Math.abs(graphStartingPoint.x - graphEndingPoint.x)).toFixed(3)}x`
+    let endTime = new Date()
+    document.getElementById("elapsedTime").innerHTML = `Render Time: ${endTime - startTime} ms`
     }
 })  
 
 function compute_next(z, c){
     let z2 = {
-        "x" : (z.x*z.x - z.y*z.y + c.a),
-        "y" : (2*z.x*z.y + c.b) 
+        "x" : ((z.x - z.y)*(z.x + z.y) + c.a),
+        "y" : (2*z.x*z.y + c.b)
     }
     return z2;
 }
@@ -179,20 +183,11 @@ function mod(z){
 function count_itteration(x, y, c, maxIteration, lim){
     let z;
     if(currentFractal === "julia"){
-        z = {
-            "x" : x,
-            "y" : y
-        }
+        z = { "x" : x, "y" : y }
     }
     else if(currentFractal === "mandelbrot"){
-        z = {
-            "x" : 0,
-            "y" : 0
-        }
-        c = {
-            a : x,
-            b : y
-        }
+        z = { "x" : 0, "y" : 0 }
+        c = { a : x, b : y }
         lim = 2 
     }
     else{
@@ -202,8 +197,8 @@ function count_itteration(x, y, c, maxIteration, lim){
     let i = 0
     let lim_sq = Math.pow(lim, 2)
     while(i < maxIteration){
-        let z2 = compute_next(z, c);
-        if(mod(z2) > lim_sq) break;
+        let z2 = compute_next(z, c)
+        if(mod(z2) > lim_sq) break
         z.x = z2.x
         z.y = z2.y
         i++;
@@ -226,7 +221,7 @@ function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
   }
 function getMousePosFloored(canvas, evt) {
-  var rect = canvas.getBoundingClientRect();
+  var rect = canvas.getBoundingClientRect()
   return {
       x: Math.floor(evt.clientX - rect.left),
       y: Math.floor(evt.clientY - rect.top)
