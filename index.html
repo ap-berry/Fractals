@@ -4,27 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fractals</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link rel="stylesheet" href="style.css">
     <script src="index.js"></script>
 </head>
 <body>
-    <div id="master">
+    <div id="desc-img-container">
+        <img src="imgs/julia sets.png" alt="description-img" id="description-img">
+    </div>
     <div id="other">
-        <label for="a" id="a_label">c.a = -0.48</label>  
+        <label for="a" id="a_label">c.re = -0.48</label>  
         <input type="range" min="-200" max="200" value = "-48" id = "a">
-        <label for="b" id="b_label">c.b = -0.56</label>  
+        <label for="b" id="b_label">c.im = -0.56</label>  
         <input type="range" min="-200" max="200" value = "-56" id = "b">
         <label id="lim_label">limit = 2</label>  
-        <label for="maxIter" id="maxIter_label">(Improves Sharpness, use with high zoom) maximum Iteration : </label> 
-        <input type="number" name="" value="200" id="maxIter">
+        <label for="maxIter" id="maxIter_label">maximum Iteration : (Improves Sharpness, increases compute time, use with high zoom):</label> 
+        <input style="color: black;" type="number" name="" value="200" id="maxIter">
         <div id="btns">
             <button id="start">Start lagging</button>
             <button id="save">Save Fractal</button>
             <button type="" id="zoomout" disabled>Zoom Out</button>
             <label for="autodwn">Auto Download Image?</label>
-            <input type="checkbox" id="autodwn">
+            <input style="color: black;" type="checkbox" id="autodwn">
         </div>
-        <select name="change fractal" id="modechanger">
+        <select style="color: black;" name="change fractal" id="modechanger">
             <option value="julia">Julia sets</option>
             <option value="mandelbrot">Mandelbrot set</option>
             <option value="serpernski">Serpenski triangle?</option>
@@ -35,8 +38,7 @@
       <div id="elapsedTime"></div>
     </div>
     <div id="Fractals">
-        <canvas id="mycanvas" style="border:1px solid #000000;"></canvas>
-    </div>
+        <canvas id="mycanvas" style="border:1px solid #85a1f0;"></canvas>
     </div>
 </body>
 </html>

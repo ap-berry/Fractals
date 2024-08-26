@@ -8,7 +8,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     canvas.height = 700 //window.innerHeight;
     const width = canvas.width
     const height = canvas.height
- 
+    let started = false
+
+    const description_image = document.getElementById("description-img");
+
     const slider_a = document.getElementById("a")
     slider_a.oninput = () => {
         document.getElementById("a_label").innerText = `c.a = ${slider_a.value/100}`;
@@ -19,6 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     const input_maxIter = document.getElementById("maxIter") 
     document.getElementById("start").addEventListener("click", () => {
+        started = true
         start({
             x : -2,
             y : 2
@@ -37,13 +41,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     mode.addEventListener("change", ()=>{
         currentFractal = mode.value
         if(mode.value === "mandelbrot"){
+            description_image.src = "imgs/mandelbrot set.png" //TODO
             slider_a.hidden = true;
             slider_b.hidden = true;
             document.getElementById("a_label").hidden = true;
             document.getElementById("b_label").hidden = true;
         }
         else if(mode.value === "julia"){
-
+            description_image.src = "imgs/julia sets.png"
             slider_a.hidden = false;
             slider_b.hidden = false;
             document.getElementById("a_label").hidden = false;
@@ -79,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let x = canvasStartingPoint.x 
         let y = canvasStartingPoint.y
         let a = Math.max(Math.abs(w), Math.abs(h))
-        ctx.strokeStyle = "red" 
+        ctx.strokeStyle = "#85a1f0" 
         if(h < 0 && w > 0) { 
           ctx.strokeRect(x, y, a, -a)
           canvasEndingPoint.x = canvasStartingPoint.x + a
@@ -109,6 +114,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log("Canvas Positions", canvasStartingPoint, canvasEndingPoint)
         console.log("Graph Positions", point1, point2)
         states.push({graphStartingPoint, graphEndingPoint})
+        if (!started){
+            return
+        }
         if (zoomoutbtn.disabled) zoomoutbtn.disabled = false
         start(point1, point2)
     }

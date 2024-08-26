@@ -1,7 +1,10 @@
-#master{
+body{
+    padding: 1%;
     display: flex;
     justify-content: center;
     flex-direction: column;
+    background-color: #0f1013;
+    color: white;
 }
 #other{
     display: flex;
@@ -9,11 +12,23 @@
     flex-direction: column;
     margin: 2%;
 }
+#btns{
+    padding: 3px;
+}
 #Fractals{
     display: flex;
     justify-content: center; 
 }
-body{
-    padding: 3%;
-
+input{
+    color: black;
+}
+select{
+    color: black;
+}
+#description-img{
+    object-fit: none;
+}
+#desc-img-container{
+    display: flex;
+    justify-content: center;
 }
